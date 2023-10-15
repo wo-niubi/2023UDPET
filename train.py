@@ -27,7 +27,7 @@ train_bs=8
 valid_bs=16
 norm='zs'
 dose='1-100'
-lossname='huber_10'
+lossname='l1'
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -67,14 +67,11 @@ class Train():
             G=Triple()
         elif way=='triple3':
             G=Triple3()
-            # G.load_state_dict(torch.load((f'/data2/lyy2/run/triple3-{self.loss_name}denoise.pth')))
         return G
     
     def get_loss(self,loss_name):
         if loss_name=='l1':
             L=L1Loss()
-        elif loss_name.split('_')[0]=='huber':
-            L=torch.nn.HuberLoss(reduction='mean', delta=int(loss_name.split('_')[1]))
         elif loss_name=='mse':
             L=MSELoss()
         return L
