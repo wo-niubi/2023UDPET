@@ -14,89 +14,17 @@ class Triple(nn.Module):
         super(Triple, self).__init__()
         self.backbone=Backbone(in_channels, out_channels, features)
         self.conv1=nn.Sequential(ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                nn.ReLU()
+                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1)
                                 )
         self.conv2=nn.Sequential(ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                nn.ReLU()
+                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1)
                                 )
     def forward(self, x):  
         dec=self.backbone(x)
         information=self.conv1(dec)
         denoise=self.conv2(dec)
-        return x-denoise+information
+        return denoise+information
 
-# class Triple2(nn.Module):
-#     def __init__(self, in_channels=1, out_channels=1, features=16):
-#         super(Triple2, self).__init__()
-#         self.in_channels = in_channels
-#         self.out_channels = out_channels
-#         self.features = features
-
-#         self.encoder1 = block(self.in_channels, self.features)
-#         self.pool1 = nn.MaxPool3d(kernel_size=2, stride=2)
-#         self.encoder2 = block(self.features, self.features * 2)
-#         self.pool2 = nn.MaxPool3d(kernel_size=2, stride=2)
-#         self.encoder3 = block(self.features * 2, self.features * 4)
-#         self.pool3 = nn.MaxPool3d(kernel_size=2, stride=2)
-#         self.encoder4 = block(self.features * 4, self.features * 8)
-        
-#         self.decoder4 = block((self.features * 8)  , self.features * 8)
-#         self.upconv3 = nn.ConvTranspose3d(self.features * 8, self.features * 4, kernel_size=2, stride=2)
-#         self.decoder3 = block((self.features * 8) , self.features * 4)
-#         self.upconv2 = nn.ConvTranspose3d(self.features * 4, self.features * 2, kernel_size=2, stride=2)
-#         self.decoder2 = block((self.features * 4) , self.features *2)
-#         self.upconv1 = nn.ConvTranspose3d(self.features * 2, self.features, kernel_size=2, stride=2)
-#         self.decoder1 = block(self.features * 2, self.features)
-
-#         self.conv1=nn.Sequential(nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-#                                 #  nn.ReLU()
-#                                )
-#         # self.conv2=nn.Sequential(nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-#         #                          nn.ReLU()
-#         #                         )
-#         kernel=GaussianKernel(1,1.5)
-#         self.weight = nn.Parameter(data=kernel, requires_grad=False)
-       
-#     def forward(self, x):      
-        
-#         enc1 = self.encoder1(x)
-#         enc2 = self.encoder2(self.pool1(enc1))
-#         enc3 = self.encoder3(self.pool2(enc2))
-#         enc4 = self.encoder4(self.pool3(enc3))
-
-#         dec4 = self.decoder4(enc4)
-#         dec3 = self.decoder3(torch.cat((self.upconv3(dec4),enc3),dim=1))
-#         dec2 = self.decoder2(torch.cat((self.upconv2(dec3),enc2),dim=1))
-#         dec1 = self.decoder1(torch.cat((self.upconv1(dec2),enc1),dim=1))
-#         information=self.conv1(dec1)
-        
-#         return information+nn.functional.conv3d(x,self.weight,padding=1)
-#         # output = nn.functional.conv3d(x+information,self.weight,padding=1)
-#         # return output
-#         # return nn.functional.conv3d(x,self.weight,padding=1)+information
-
-# nn.functional.conv3d(x,self.weight,padding=1)+information>nn.functional.conv3d(x+information,self.weight,padding=1)
-        
-class Triple3(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1, features=64):
-        super(Triple3, self).__init__()
-        self.backbone=Backbone(in_channels, out_channels, features)
-        self.conv1=nn.Sequential(ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                )
-        self.conv2=nn.Sequential(ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                )
-    def forward(self, x):  
-        dec=self.backbone(x)
-        information=self.conv1(dec)
-        # return x+information
-        denoise=self.conv2(dec).detach()
-        # return x-denoise
-        return x-denoise+information
-        # return information
 
 class Backbone(nn.Module):
     def __init__(self, in_channels=1, out_channels=1, features=16):
@@ -247,25 +175,6 @@ class MedianFilter(nn.Module):
         output = median_value.view(input.size(0), input.size(1), input.size(2), input.size(3))
         return output
 
-class Net(nn.Module):
-    def __init__(self, in_channels=1, out_channels=1, features=2):
-        super(Net, self).__init__()
-        self.backbone=nn.Conv3d(in_channels, features, kernel_size=1)
-        self.conv1=nn.Sequential(nn.Conv3d(features, features, kernel_size=1),
-                                ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                )
-        self.conv2=nn.Sequential(nn.Conv3d(features, features, kernel_size=1),
-                                ChanelAttention(features,features),
-                                nn.Conv3d(in_channels=features, out_channels=out_channels, kernel_size=1),
-                                )
-    def forward(self, x):  
-        dec=self.backbone(x)
-        # information=self.conv1(dec)
-        # return x+information
-        denoise=self.conv2(dec.detach())
-        return x-denoise
-        # return x-denoise+information
 
 
 
